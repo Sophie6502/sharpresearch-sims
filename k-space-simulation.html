@@ -1401,6 +1401,18 @@ h2 {
 })();
 
 </script>
-  </body>
+  
+<script>
+(function(){
+  function measure(){
+    var h = document.documentElement.scrollHeight;
+    try { parent.postMessage({t:'sharpresearch-height', h:h}, '*'); } catch(e){}
+  }
+  window.addEventListener('load', measure);
+  window.addEventListener('message', function(e){ if(e.data && e.data.t==='sharpresearch-measure') measure(); });
+  var t; window.addEventListener('resize', function(){ clearTimeout(t); t=setTimeout(measure,150); });
+})();
+</script>
+</body>
 </html>
 </div>
