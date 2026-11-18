@@ -1,0 +1,1406 @@
+<!doctype html>
+<html lang="en">
+  <head><script src="/gdpr/gdprscript.js?buildTime=1793909397"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f2f1e9" />
+    <meta name="description" content="Explore a 64 by 64 image and its two-dimensional Fourier transform." />
+    <title>K-SPACE PAINT BY NUMBERS</title>
+    <style>
+/* src/style.css */
+:root {
+  font-family:
+    "Avenir Next",
+    "Helvetica Neue",
+    sans-serif;
+  color: #222c29;
+  background: #f2f1e9;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --ink: #222c29;
+  --muted: #78807a;
+  --line: #d5d6cc;
+  --paper: #f8f7f1;
+  --green: #287267;
+  --orange: #e58c4a;
+  --mono:
+    "SFMono-Regular",
+    Menlo,
+    monospace;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f2f1e9;
+  background-image: radial-gradient(#c8c9bd 0.65px, transparent 0.65px);
+  background-size: 13px 13px;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+.app-shell {
+  width: min(1180px, calc(100% - 64px));
+  margin: 0 auto;
+}
+.topbar {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.wordmark {
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+.wordmark span {
+  color: var(--green);
+}
+.topbar-meta,
+.eyebrow,
+.control-label,
+.panel-note,
+.panel-footer,
+.app-footer,
+.transform-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.8px;
+}
+.topbar-meta {
+  color: #5a645e;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #71a45c;
+  box-shadow: 0 0 0 3px #71a45c22;
+}
+.meta-divider {
+  color: #b1b4a9;
+}
+.help-button,
+.help-close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #bec4b8;
+  border-radius: 50%;
+  color: var(--green);
+  background: var(--paper);
+  cursor: pointer;
+}
+.help-button {
+  width: auto;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 2px;
+  font: 9px var(--mono);
+}
+.help-button:hover,
+.help-close:hover {
+  border-color: var(--green);
+  background: #edf1e8;
+}
+.help-button:focus-visible,
+.help-close:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+.help-dialog {
+  width: min(440px, calc(100vw - 32px));
+  max-width: none;
+  padding: 0;
+  border: 1px solid #c8cbc0;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 0 18px 60px #1c2a2440;
+}
+.help-dialog::backdrop {
+  background: #17231fc0;
+}
+.help-content {
+  padding: 22px;
+}
+.help-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.help-heading h2 {
+  font-size: 18px;
+}
+.help-close {
+  font-size: 20px;
+  line-height: 1;
+}
+.help-list {
+  display: grid;
+  gap: 15px;
+  margin: 18px 0 0;
+}
+.help-list div {
+  display: grid;
+  gap: 4px;
+}
+.help-list dt {
+  color: var(--green);
+  font: 10px var(--mono);
+}
+.help-list dd {
+  margin: 0;
+  color: #59635d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.help-contact {
+  margin: 18px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font: 12px var(--mono);
+}
+.help-contact a {
+  color: var(--green);
+}
+.help-contact a:hover {
+  color: #194f49;
+}
+.intro {
+  min-height: 204px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 27px 0 24px;
+}
+.eyebrow {
+  margin: 0 0 13px;
+  color: var(--green);
+  font-weight: 500;
+}
+.eyebrow span {
+  color: var(--orange);
+}
+h1 {
+  margin: 0;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1.04;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+h1 em {
+  color: var(--green);
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+.lede {
+  margin: 12px 0 0;
+  color: #737a73;
+  font-size: 14px;
+}
+.size-stamp {
+  width: 91px;
+  height: 91px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #bec4b8;
+  border-radius: 50%;
+  transform: rotate(-8deg);
+}
+.size-stamp strong {
+  font-family: Georgia, serif;
+  font-size: 37px;
+  font-weight: 400;
+  color: var(--green);
+}
+.size-stamp span {
+  color: var(--muted);
+  font: 8px/1.45 var(--mono);
+  letter-spacing: 0.6px;
+  transform: rotate(8deg);
+}
+.controls {
+  min-height: 75px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 22px;
+  padding: 13px 18px;
+  border: 1px solid var(--line);
+  background: #f8f7f1d9;
+}
+.control-group {
+  display: grid;
+  gap: 7px;
+}
+.control-label {
+  color: #777f78;
+}
+.control-label output {
+  color: var(--ink);
+  margin-left: 10px;
+}
+select {
+  min-width: 178px;
+  padding: 0 28px 0 0;
+  border: 0;
+  outline: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.gain-control,
+.amplitude-control,
+.intensity-control {
+  width: min(190px, 18vw);
+}
+input[type=range] {
+  width: 100%;
+  height: 4px;
+  accent-color: var(--green);
+  cursor: pointer;
+}
+input[type=range]:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.transform-tag {
+  margin-left: auto;
+  color: #737a73;
+  white-space: nowrap;
+}
+.tag-mark {
+  color: var(--orange);
+  font-size: 15px;
+  margin-right: 5px;
+}
+.comparison {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+  padding-top: 28px;
+}
+.view-panel {
+  min-width: 0;
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 35px;
+  margin-bottom: 13px;
+}
+.panel-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.panel-index {
+  color: var(--orange);
+  font: 11px var(--mono);
+}
+h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.panel-note {
+  color: #858b82;
+  font-size: 9px;
+}
+.canvas-stage {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  max-height: 480px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #d2d4ca;
+}
+.source-stage {
+  background-color: #faf9f4;
+  background-image:
+    linear-gradient(#e9e9e2 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      #e9e9e2 1px,
+      transparent 1px);
+  background-size: 12.5% 12.5%;
+}
+.spectrum-stage {
+  background: #e7e7dc;
+  touch-action: none;
+  user-select: none;
+}
+.canvas-stage canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.spectrum-stage canvas {
+  image-rendering: pixelated;
+}
+#spectrum-canvas {
+  cursor: crosshair;
+}
+#spectrum-canvas:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: -3px;
+}
+.axis-label {
+  position: absolute;
+  z-index: 1;
+  color: #f6f2e6;
+  font: 10px var(--mono);
+  text-shadow: 0 1px 3px #172320;
+}
+.axis-top {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.axis-right {
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.center-mark {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1px solid #fff2c9;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #26352e66;
+  pointer-events: none;
+}
+.bin-cursor {
+  position: absolute;
+  z-index: 2;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #fff7dd;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #db794a;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.bin-cursor[hidden] {
+  display: none;
+}
+.frequency-readout {
+  min-height: 30px;
+  padding-top: 9px;
+  color: var(--ink);
+  font: 10px var(--mono);
+}
+.frequency-readout span {
+  color: var(--orange);
+  padding: 0 4px;
+}
+.panel-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  color: #81877f;
+  font-size: 9px;
+}
+.panel-footer b {
+  color: var(--green);
+  font-weight: 500;
+}
+.transform-connector {
+  position: absolute;
+  z-index: 2;
+  top: 52%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #c8cbc0;
+  border-radius: 50%;
+  color: var(--green);
+  background: #f2f1e9;
+  font: 10px var(--mono);
+  transform: translate(-50%, -50%);
+}
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 25px;
+  padding: 14px 0 28px;
+  border-top: 1px solid var(--line);
+  color: #858b82;
+  font-size: 9px;
+}
+.app-footer i {
+  color: var(--orange);
+  font-style: normal;
+  padding: 0 5px;
+}
+@media (min-width: 900px) {
+  .canvas-stage {
+    width: min(100%, 480px);
+    margin: 0 auto;
+  }
+}
+@media (max-width: 680px) {
+  .app-shell {
+    width: calc(100% - 36px);
+  }
+  .topbar {
+    height: auto;
+    min-height: 58px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 8px 0;
+  }
+  .help-button {
+    margin-left: auto;
+  }
+  .intro {
+    min-height: 176px;
+  }
+  h1 {
+    font-size: 36px;
+  }
+  .lede {
+    max-width: 245px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .size-stamp {
+    width: 70px;
+    height: 70px;
+    gap: 4px;
+    flex: 0 0 auto;
+  }
+  .size-stamp strong {
+    font-size: 28px;
+  }
+  .size-stamp span {
+    font-size: 7px;
+  }
+  .controls {
+    flex-wrap: wrap;
+    gap: 16px 22px;
+    padding: 14px;
+  }
+  .gain-control {
+    flex: 1;
+    min-width: 130px;
+    width: auto;
+  }
+  .amplitude-control {
+    flex: 1;
+    min-width: 130px;
+    width: auto;
+  }
+  .intensity-control {
+    flex: 1;
+    min-width: 130px;
+    width: auto;
+  }
+  .transform-tag {
+    width: 100%;
+    margin: 0;
+    font-size: 9px;
+  }
+  .comparison {
+    grid-template-columns: 1fr;
+    gap: 29px;
+    padding-top: 23px;
+  }
+  .canvas-stage {
+    max-height: none;
+  }
+  .transform-connector {
+    top: 50%;
+  }
+  .panel-heading {
+    margin-bottom: 9px;
+  }
+  .panel-note {
+    font-size: 8px;
+  }
+  .app-footer {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .view-panel {
+    animation: arrive 500ms both;
+  }
+  .spectrum-panel {
+    animation-delay: 100ms;
+  }
+  @keyframes arrive {
+    from {
+      opacity: 0;
+      transform: translateY(7px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+</style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="wordmark" href="#">K-SPACE PAINT BY NUMBERS</a>
+        <div class="topbar-meta"><span class="status-dot"></span> SIGNAL LAB <span class="meta-divider">/</span> 01</div>
+        <button id="help-button" class="help-button" type="button" aria-label="Quick help" aria-haspopup="dialog" aria-controls="help-dialog" title="Quick help">QUICK HELP</button>
+      </header>
+
+      <main>
+        <section class="intro" aria-labelledby="page-title">
+          <div>
+            <p class="eyebrow">IMAGE PROCESSING <span>·</span> FREQUENCY DOMAIN</p>
+            <h1 id="page-title">K-SPACE PAINT BY NUMBERS</h1>
+            <p class="lede">A 64 × 64 signal, seen in space and in frequency.</p>
+          </div>
+          <div class="size-stamp"><strong>64</strong><span>× 64<br />SAMPLES</span></div>
+        </section>
+
+        <section class="controls" aria-label="Image controls">
+          <label class="control-group" for="pattern-select">
+            <span class="control-label">SOURCE PATTERN</span>
+            <select id="pattern-select">
+              <option value="single-frequency" selected>YOU BUILD K-SPACE</option>
+              <option value="rings">Concentric rings</option>
+              <option value="bars">Vertical bars</option>
+              <option value="checker">Checkerboard</option>
+              <option value="diagonal">Diagonal wave</option>
+              <option value="cross">Soft cross</option>
+            </select>
+          </label>
+          <label class="control-group gain-control" for="gain-range">
+            <span class="control-label">K-SPACE BRIGHTNESS <output id="gain-value">1.0×</output></span>
+            <input id="gain-range" type="range" min="0.5" max="3" step="0.1" value="1" />
+          </label>
+          <label class="control-group amplitude-control" for="amplitude-range">
+            <span class="control-label">K-SPACE VALUE <output id="amplitude-value">1.00</output></span>
+            <input id="amplitude-range" type="range" min="0" max="1" step="0.01" value="1" disabled />
+          </label>
+          <label class="control-group intensity-control" for="intensity-range">
+            <span class="control-label">IMAGE BRIGHTNESS <output id="intensity-value">1.00</output></span>
+            <input id="intensity-range" type="range" min="0" max="1" step="0.01" value="1" />
+          </label>
+          <div class="transform-tag"><span class="tag-mark">↗</span> 2D DISCRETE FOURIER TRANSFORM</div>
+        </section>
+
+        <section class="comparison" aria-label="Image and Fourier spectrum">
+          <article class="view-panel spectrum-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">01</span><h2>K-SPACE</h2></div>
+              <span id="spectrum-note" class="panel-note">CENTERED / LINEAR MAGNITUDE</span>
+            </div>
+            <div class="canvas-stage spectrum-stage">
+              <canvas id="spectrum-canvas" width="64" height="64" tabindex="0" aria-label="Centered 64 by 64 Fourier spectrum. Click or drag to paint bins in You Build K-Space mode, or use arrow keys to inspect values."></canvas>
+              <span class="axis-label axis-top">V</span>
+              <span class="axis-label axis-right">U</span>
+              <span class="center-mark" aria-hidden="true"></span>
+              <span id="bin-cursor" class="bin-cursor" aria-hidden="true" hidden></span>
+            </div>
+            <div id="frequency-readout" class="frequency-readout" role="status" aria-live="polite">BIN --, -- <span>·</span> |F| --</div>
+            <div class="panel-footer"><span id="spectrum-footer-note">DC COMPONENT <b>AT CENTER</b></span><span id="spectrum-scale">LINEAR |F(u,v)|</span></div>
+          </article>
+
+          <div class="transform-connector" aria-hidden="true"><span>FFT</span></div>
+
+          <article class="view-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">02</span><h2>IMAGE</h2></div>
+              <span class="panel-note">INPUT / GRAYSCALE</span>
+            </div>
+            <div class="canvas-stage source-stage">
+              <canvas id="source-canvas" width="64" height="64" aria-label="64 by 64 grayscale source image"></canvas>
+            </div>
+            <div class="panel-footer"><span>PIXEL INTENSITY</span><span>0 — 255</span></div>
+          </article>
+        </section>
+
+        <footer class="app-footer">
+          <span id="transform-note">REAL-VALUED INPUT <i>·</i> SEPARABLE ROW / COLUMN TRANSFORM</span>
+          <span id="readout">READY <i>·</i> 4,096 SAMPLES</span>
+        </footer>
+      </main>
+    </div>
+    <dialog id="help-dialog" class="help-dialog" aria-labelledby="help-title">
+      <div class="help-content">
+        <div class="help-heading">
+          <h2 id="help-title">Quick guide</h2>
+          <button id="help-close" class="help-close" type="button" aria-label="Close help" title="Close">×</button>
+        </div>
+        <dl class="help-list">
+          <div><dt>Choose a pattern</dt><dd>Select YOU BUILD K-SPACE to edit the spectrum, or choose a generated image pattern.</dd></div>
+          <div><dt>Paint k-space</dt><dd>Click a bin to toggle it. Drag across bins to paint with the current K-SPACE VALUE.</dd></div>
+          <div><dt>Adjust brightness</dt><dd>K-SPACE BRIGHTNESS scales the spectrum display. IMAGE BRIGHTNESS scales the image and its FFT.</dd></div>
+          <div><dt>Inspect a bin</dt><dd>Click a bin to read its coordinates and value. Focus the plot and use arrow keys to inspect neighboring bins.</dd></div>
+        </dl>
+        <p class="help-contact"><a href="/cdn-cgi/l/email-protection#59333a2a31382b29192c38353b3c2b2d38773a38"><span class="__cf_email__" data-cfemail="315b5242595043417144505d53544345501f5250">[email&#160;protected]</span></a></p>
+      </div>
+    </dialog>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+(() => {
+  var __create = Object.create;
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getProtoOf = Object.getPrototypeOf;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __commonJS = (cb, mod) => function __require() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+    mod
+  ));
+
+  // node_modules/fft.js/lib/fft.js
+  var require_fft = __commonJS({
+    "node_modules/fft.js/lib/fft.js"(exports, module) {
+      "use strict";
+      function FFT2(size) {
+        this.size = size | 0;
+        if (this.size <= 1 || (this.size & this.size - 1) !== 0)
+          throw new Error("FFT size must be a power of two and bigger than 1");
+        this._csize = size << 1;
+        var table = new Array(this.size * 2);
+        for (var i = 0; i < table.length; i += 2) {
+          const angle = Math.PI * i / this.size;
+          table[i] = Math.cos(angle);
+          table[i + 1] = -Math.sin(angle);
+        }
+        this.table = table;
+        var power = 0;
+        for (var t = 1; this.size > t; t <<= 1)
+          power++;
+        this._width = power % 2 === 0 ? power - 1 : power;
+        this._bitrev = new Array(1 << this._width);
+        for (var j = 0; j < this._bitrev.length; j++) {
+          this._bitrev[j] = 0;
+          for (var shift = 0; shift < this._width; shift += 2) {
+            var revShift = this._width - shift - 2;
+            this._bitrev[j] |= (j >>> shift & 3) << revShift;
+          }
+        }
+        this._out = null;
+        this._data = null;
+        this._inv = 0;
+      }
+      module.exports = FFT2;
+      FFT2.prototype.fromComplexArray = function fromComplexArray(complex, storage) {
+        var res = storage || new Array(complex.length >>> 1);
+        for (var i = 0; i < complex.length; i += 2)
+          res[i >>> 1] = complex[i];
+        return res;
+      };
+      FFT2.prototype.createComplexArray = function createComplexArray() {
+        const res = new Array(this._csize);
+        for (var i = 0; i < res.length; i++)
+          res[i] = 0;
+        return res;
+      };
+      FFT2.prototype.toComplexArray = function toComplexArray(input, storage) {
+        var res = storage || this.createComplexArray();
+        for (var i = 0; i < res.length; i += 2) {
+          res[i] = input[i >>> 1];
+          res[i + 1] = 0;
+        }
+        return res;
+      };
+      FFT2.prototype.completeSpectrum = function completeSpectrum(spectrum) {
+        var size = this._csize;
+        var half = size >>> 1;
+        for (var i = 2; i < half; i += 2) {
+          spectrum[size - i] = spectrum[i];
+          spectrum[size - i + 1] = -spectrum[i + 1];
+        }
+      };
+      FFT2.prototype.transform = function transform(out, data) {
+        if (out === data)
+          throw new Error("Input and output buffers must be different");
+        this._out = out;
+        this._data = data;
+        this._inv = 0;
+        this._transform4();
+        this._out = null;
+        this._data = null;
+      };
+      FFT2.prototype.realTransform = function realTransform(out, data) {
+        if (out === data)
+          throw new Error("Input and output buffers must be different");
+        this._out = out;
+        this._data = data;
+        this._inv = 0;
+        this._realTransform4();
+        this._out = null;
+        this._data = null;
+      };
+      FFT2.prototype.inverseTransform = function inverseTransform(out, data) {
+        if (out === data)
+          throw new Error("Input and output buffers must be different");
+        this._out = out;
+        this._data = data;
+        this._inv = 1;
+        this._transform4();
+        for (var i = 0; i < out.length; i++)
+          out[i] /= this.size;
+        this._out = null;
+        this._data = null;
+      };
+      FFT2.prototype._transform4 = function _transform4() {
+        var out = this._out;
+        var size = this._csize;
+        var width = this._width;
+        var step = 1 << width;
+        var len = size / step << 1;
+        var outOff;
+        var t;
+        var bitrev = this._bitrev;
+        if (len === 4) {
+          for (outOff = 0, t = 0; outOff < size; outOff += len, t++) {
+            const off = bitrev[t];
+            this._singleTransform2(outOff, off, step);
+          }
+        } else {
+          for (outOff = 0, t = 0; outOff < size; outOff += len, t++) {
+            const off = bitrev[t];
+            this._singleTransform4(outOff, off, step);
+          }
+        }
+        var inv = this._inv ? -1 : 1;
+        var table = this.table;
+        for (step >>= 2; step >= 2; step >>= 2) {
+          len = size / step << 1;
+          var quarterLen = len >>> 2;
+          for (outOff = 0; outOff < size; outOff += len) {
+            var limit = outOff + quarterLen;
+            for (var i = outOff, k = 0; i < limit; i += 2, k += step) {
+              const A = i;
+              const B = A + quarterLen;
+              const C = B + quarterLen;
+              const D = C + quarterLen;
+              const Ar = out[A];
+              const Ai = out[A + 1];
+              const Br = out[B];
+              const Bi = out[B + 1];
+              const Cr = out[C];
+              const Ci = out[C + 1];
+              const Dr = out[D];
+              const Di = out[D + 1];
+              const MAr = Ar;
+              const MAi = Ai;
+              const tableBr = table[k];
+              const tableBi = inv * table[k + 1];
+              const MBr = Br * tableBr - Bi * tableBi;
+              const MBi = Br * tableBi + Bi * tableBr;
+              const tableCr = table[2 * k];
+              const tableCi = inv * table[2 * k + 1];
+              const MCr = Cr * tableCr - Ci * tableCi;
+              const MCi = Cr * tableCi + Ci * tableCr;
+              const tableDr = table[3 * k];
+              const tableDi = inv * table[3 * k + 1];
+              const MDr = Dr * tableDr - Di * tableDi;
+              const MDi = Dr * tableDi + Di * tableDr;
+              const T0r = MAr + MCr;
+              const T0i = MAi + MCi;
+              const T1r = MAr - MCr;
+              const T1i = MAi - MCi;
+              const T2r = MBr + MDr;
+              const T2i = MBi + MDi;
+              const T3r = inv * (MBr - MDr);
+              const T3i = inv * (MBi - MDi);
+              const FAr = T0r + T2r;
+              const FAi = T0i + T2i;
+              const FCr = T0r - T2r;
+              const FCi = T0i - T2i;
+              const FBr = T1r + T3i;
+              const FBi = T1i - T3r;
+              const FDr = T1r - T3i;
+              const FDi = T1i + T3r;
+              out[A] = FAr;
+              out[A + 1] = FAi;
+              out[B] = FBr;
+              out[B + 1] = FBi;
+              out[C] = FCr;
+              out[C + 1] = FCi;
+              out[D] = FDr;
+              out[D + 1] = FDi;
+            }
+          }
+        }
+      };
+      FFT2.prototype._singleTransform2 = function _singleTransform2(outOff, off, step) {
+        const out = this._out;
+        const data = this._data;
+        const evenR = data[off];
+        const evenI = data[off + 1];
+        const oddR = data[off + step];
+        const oddI = data[off + step + 1];
+        const leftR = evenR + oddR;
+        const leftI = evenI + oddI;
+        const rightR = evenR - oddR;
+        const rightI = evenI - oddI;
+        out[outOff] = leftR;
+        out[outOff + 1] = leftI;
+        out[outOff + 2] = rightR;
+        out[outOff + 3] = rightI;
+      };
+      FFT2.prototype._singleTransform4 = function _singleTransform4(outOff, off, step) {
+        const out = this._out;
+        const data = this._data;
+        const inv = this._inv ? -1 : 1;
+        const step2 = step * 2;
+        const step3 = step * 3;
+        const Ar = data[off];
+        const Ai = data[off + 1];
+        const Br = data[off + step];
+        const Bi = data[off + step + 1];
+        const Cr = data[off + step2];
+        const Ci = data[off + step2 + 1];
+        const Dr = data[off + step3];
+        const Di = data[off + step3 + 1];
+        const T0r = Ar + Cr;
+        const T0i = Ai + Ci;
+        const T1r = Ar - Cr;
+        const T1i = Ai - Ci;
+        const T2r = Br + Dr;
+        const T2i = Bi + Di;
+        const T3r = inv * (Br - Dr);
+        const T3i = inv * (Bi - Di);
+        const FAr = T0r + T2r;
+        const FAi = T0i + T2i;
+        const FBr = T1r + T3i;
+        const FBi = T1i - T3r;
+        const FCr = T0r - T2r;
+        const FCi = T0i - T2i;
+        const FDr = T1r - T3i;
+        const FDi = T1i + T3r;
+        out[outOff] = FAr;
+        out[outOff + 1] = FAi;
+        out[outOff + 2] = FBr;
+        out[outOff + 3] = FBi;
+        out[outOff + 4] = FCr;
+        out[outOff + 5] = FCi;
+        out[outOff + 6] = FDr;
+        out[outOff + 7] = FDi;
+      };
+      FFT2.prototype._realTransform4 = function _realTransform4() {
+        var out = this._out;
+        var size = this._csize;
+        var width = this._width;
+        var step = 1 << width;
+        var len = size / step << 1;
+        var outOff;
+        var t;
+        var bitrev = this._bitrev;
+        if (len === 4) {
+          for (outOff = 0, t = 0; outOff < size; outOff += len, t++) {
+            const off = bitrev[t];
+            this._singleRealTransform2(outOff, off >>> 1, step >>> 1);
+          }
+        } else {
+          for (outOff = 0, t = 0; outOff < size; outOff += len, t++) {
+            const off = bitrev[t];
+            this._singleRealTransform4(outOff, off >>> 1, step >>> 1);
+          }
+        }
+        var inv = this._inv ? -1 : 1;
+        var table = this.table;
+        for (step >>= 2; step >= 2; step >>= 2) {
+          len = size / step << 1;
+          var halfLen = len >>> 1;
+          var quarterLen = halfLen >>> 1;
+          var hquarterLen = quarterLen >>> 1;
+          for (outOff = 0; outOff < size; outOff += len) {
+            for (var i = 0, k = 0; i <= hquarterLen; i += 2, k += step) {
+              var A = outOff + i;
+              var B = A + quarterLen;
+              var C = B + quarterLen;
+              var D = C + quarterLen;
+              var Ar = out[A];
+              var Ai = out[A + 1];
+              var Br = out[B];
+              var Bi = out[B + 1];
+              var Cr = out[C];
+              var Ci = out[C + 1];
+              var Dr = out[D];
+              var Di = out[D + 1];
+              var MAr = Ar;
+              var MAi = Ai;
+              var tableBr = table[k];
+              var tableBi = inv * table[k + 1];
+              var MBr = Br * tableBr - Bi * tableBi;
+              var MBi = Br * tableBi + Bi * tableBr;
+              var tableCr = table[2 * k];
+              var tableCi = inv * table[2 * k + 1];
+              var MCr = Cr * tableCr - Ci * tableCi;
+              var MCi = Cr * tableCi + Ci * tableCr;
+              var tableDr = table[3 * k];
+              var tableDi = inv * table[3 * k + 1];
+              var MDr = Dr * tableDr - Di * tableDi;
+              var MDi = Dr * tableDi + Di * tableDr;
+              var T0r = MAr + MCr;
+              var T0i = MAi + MCi;
+              var T1r = MAr - MCr;
+              var T1i = MAi - MCi;
+              var T2r = MBr + MDr;
+              var T2i = MBi + MDi;
+              var T3r = inv * (MBr - MDr);
+              var T3i = inv * (MBi - MDi);
+              var FAr = T0r + T2r;
+              var FAi = T0i + T2i;
+              var FBr = T1r + T3i;
+              var FBi = T1i - T3r;
+              out[A] = FAr;
+              out[A + 1] = FAi;
+              out[B] = FBr;
+              out[B + 1] = FBi;
+              if (i === 0) {
+                var FCr = T0r - T2r;
+                var FCi = T0i - T2i;
+                out[C] = FCr;
+                out[C + 1] = FCi;
+                continue;
+              }
+              if (i === hquarterLen)
+                continue;
+              var ST0r = T1r;
+              var ST0i = -T1i;
+              var ST1r = T0r;
+              var ST1i = -T0i;
+              var ST2r = -inv * T3i;
+              var ST2i = -inv * T3r;
+              var ST3r = -inv * T2i;
+              var ST3i = -inv * T2r;
+              var SFAr = ST0r + ST2r;
+              var SFAi = ST0i + ST2i;
+              var SFBr = ST1r + ST3i;
+              var SFBi = ST1i - ST3r;
+              var SA = outOff + quarterLen - i;
+              var SB = outOff + halfLen - i;
+              out[SA] = SFAr;
+              out[SA + 1] = SFAi;
+              out[SB] = SFBr;
+              out[SB + 1] = SFBi;
+            }
+          }
+        }
+      };
+      FFT2.prototype._singleRealTransform2 = function _singleRealTransform2(outOff, off, step) {
+        const out = this._out;
+        const data = this._data;
+        const evenR = data[off];
+        const oddR = data[off + step];
+        const leftR = evenR + oddR;
+        const rightR = evenR - oddR;
+        out[outOff] = leftR;
+        out[outOff + 1] = 0;
+        out[outOff + 2] = rightR;
+        out[outOff + 3] = 0;
+      };
+      FFT2.prototype._singleRealTransform4 = function _singleRealTransform4(outOff, off, step) {
+        const out = this._out;
+        const data = this._data;
+        const inv = this._inv ? -1 : 1;
+        const step2 = step * 2;
+        const step3 = step * 3;
+        const Ar = data[off];
+        const Br = data[off + step];
+        const Cr = data[off + step2];
+        const Dr = data[off + step3];
+        const T0r = Ar + Cr;
+        const T1r = Ar - Cr;
+        const T2r = Br + Dr;
+        const T3r = inv * (Br - Dr);
+        const FAr = T0r + T2r;
+        const FBr = T1r;
+        const FBi = -T3r;
+        const FCr = T0r - T2r;
+        const FDr = T1r;
+        const FDi = T3r;
+        out[outOff] = FAr;
+        out[outOff + 1] = 0;
+        out[outOff + 2] = FBr;
+        out[outOff + 3] = FBi;
+        out[outOff + 4] = FCr;
+        out[outOff + 5] = 0;
+        out[outOff + 6] = FDr;
+        out[outOff + 7] = FDi;
+      };
+    }
+  });
+
+  // src/main.js
+  var import_fft = __toESM(require_fft(), 1);
+  var SIZE = 64;
+  var sourceCanvas = document.querySelector("#source-canvas");
+  var spectrumCanvas = document.querySelector("#spectrum-canvas");
+  var patternSelect = document.querySelector("#pattern-select");
+  var gainRange = document.querySelector("#gain-range");
+  var gainValue = document.querySelector("#gain-value");
+  var amplitudeRange = document.querySelector("#amplitude-range");
+  var amplitudeValue = document.querySelector("#amplitude-value");
+  var intensityRange = document.querySelector("#intensity-range");
+  var intensityValue = document.querySelector("#intensity-value");
+  var readout = document.querySelector("#readout");
+  var frequencyReadout = document.querySelector("#frequency-readout");
+  var binCursor = document.querySelector("#bin-cursor");
+  var transformNote = document.querySelector("#transform-note");
+  var spectrumNote = document.querySelector("#spectrum-note");
+  var spectrumFooterNote = document.querySelector("#spectrum-footer-note");
+  var spectrumScale = document.querySelector("#spectrum-scale");
+  var spectrumStage = document.querySelector(".spectrum-stage");
+  var helpButton = document.querySelector("#help-button");
+  var helpDialog = document.querySelector("#help-dialog");
+  var helpClose = document.querySelector("#help-close");
+  var sourceContext = sourceCanvas.getContext("2d");
+  var spectrumContext = spectrumCanvas.getContext("2d");
+  var fft = new import_fft.default(SIZE);
+  var currentMagnitudes = new Float64Array(SIZE * SIZE);
+  var inspectedBin = null;
+  var frequencyValues = new Float32Array(SIZE * SIZE);
+  var pointerDown = false;
+  var dragHasMoved = false;
+  var pointerStartBin = null;
+  var lastPointerBin = null;
+  frequencyValues[31 * SIZE + 31] = 1;
+  function makePattern(name, intensity) {
+    const values = new Float64Array(SIZE * SIZE);
+    for (let y = 0; y < SIZE; y += 1) {
+      for (let x = 0; x < SIZE; x += 1) {
+        const dx = x - (SIZE - 1) / 2;
+        const dy = y - (SIZE - 1) / 2;
+        let value;
+        if (name === "bars") {
+          value = Math.cos((x - 15.5) * Math.PI / 4);
+        } else if (name === "checker") {
+          value = Math.cos(x * Math.PI / 4) * Math.cos(y * Math.PI / 4);
+        } else if (name === "diagonal") {
+          value = Math.cos((x + y) * Math.PI / 5.5);
+        } else if (name === "cross") {
+          value = Math.exp(-Math.abs(dx) / 3) + Math.exp(-Math.abs(dy) / 3) - 1;
+        } else {
+          value = Math.cos(Math.hypot(dx, dy) * Math.PI / 4.2);
+        }
+        values[y * SIZE + x] = Math.max(0, Math.min(255, Math.round((value + 1) * 127.5 * intensity)));
+      }
+    }
+    return values;
+  }
+  function transform2D(values) {
+    const rows = Array.from({ length: SIZE }, () => fft.createComplexArray());
+    for (let y = 0; y < SIZE; y += 1) {
+      const input = fft.createComplexArray();
+      for (let x = 0; x < SIZE; x += 1) input[2 * x] = values[y * SIZE + x];
+      fft.transform(rows[y], input);
+    }
+    const result = Array.from({ length: SIZE }, () => fft.createComplexArray());
+    for (let x = 0; x < SIZE; x += 1) {
+      const input = fft.createComplexArray();
+      for (let y = 0; y < SIZE; y += 1) {
+        input[2 * y] = rows[y][2 * x];
+        input[2 * y + 1] = rows[y][2 * x + 1];
+      }
+      const output = fft.createComplexArray();
+      fft.transform(output, input);
+      for (let y = 0; y < SIZE; y += 1) {
+        result[y][2 * x] = output[2 * y];
+        result[y][2 * x + 1] = output[2 * y + 1];
+      }
+    }
+    return result;
+  }
+  function inverseTransform2D(frequencyRows) {
+    const rows = Array.from({ length: SIZE }, () => fft.createComplexArray());
+    for (let y = 0; y < SIZE; y += 1) fft.inverseTransform(rows[y], frequencyRows[y]);
+    const result = Array.from({ length: SIZE }, () => fft.createComplexArray());
+    for (let x = 0; x < SIZE; x += 1) {
+      const input = fft.createComplexArray();
+      for (let y = 0; y < SIZE; y += 1) {
+        input[2 * y] = rows[y][2 * x];
+        input[2 * y + 1] = rows[y][2 * x + 1];
+      }
+      const output = fft.createComplexArray();
+      fft.inverseTransform(output, input);
+      for (let y = 0; y < SIZE; y += 1) {
+        result[y][2 * x] = output[2 * y];
+        result[y][2 * x + 1] = output[2 * y + 1];
+      }
+    }
+    return result;
+  }
+  function makeSingleFrequencyPattern(intensity) {
+    const frequencyRows = Array.from({ length: SIZE }, () => fft.createComplexArray());
+    for (let y = 0; y < SIZE; y += 1) {
+      for (let x = 0; x < SIZE; x += 1) {
+        const value = frequencyValues[y * SIZE + x];
+        const sourceX = (x + SIZE / 2) % SIZE;
+        const sourceY = (y + SIZE / 2) % SIZE;
+        frequencyRows[sourceY][2 * sourceX] = value * intensity * SIZE * SIZE * 127;
+      }
+    }
+    const spatial = inverseTransform2D(frequencyRows);
+    const values = new Float64Array(SIZE * SIZE);
+    for (let y = 0; y < SIZE; y += 1) {
+      for (let x = 0; x < SIZE; x += 1) {
+        values[y * SIZE + x] = Math.max(0, Math.min(255, Math.round((127.5 + spatial[y][2 * x]) * intensity)));
+      }
+    }
+    const magnitudes = Float64Array.from(frequencyValues, (value) => value * intensity);
+    return { values, magnitudes };
+  }
+  function getCenteredMagnitudes(transformed) {
+    const magnitudes = new Float64Array(SIZE * SIZE);
+    for (let y = 0; y < SIZE; y += 1) {
+      for (let x = 0; x < SIZE; x += 1) {
+        const sourceY = (y + SIZE / 2) % SIZE;
+        const sourceX = (x + SIZE / 2) % SIZE;
+        magnitudes[y * SIZE + x] = Math.hypot(transformed[sourceY][2 * sourceX], transformed[sourceY][2 * sourceX + 1]);
+      }
+    }
+    return magnitudes;
+  }
+  function paintSource(values) {
+    const image = sourceContext.createImageData(SIZE, SIZE);
+    for (let i = 0; i < values.length; i += 1) {
+      image.data[4 * i] = values[i];
+      image.data[4 * i + 1] = values[i];
+      image.data[4 * i + 2] = values[i];
+      image.data[4 * i + 3] = 255;
+    }
+    sourceContext.putImageData(image, 0, 0);
+  }
+  function paintSpectrum(magnitudes, gain, isFrequencyMask) {
+    const maxMagnitude = Math.max(...magnitudes);
+    const image = spectrumContext.createImageData(SIZE, SIZE);
+    for (let i = 0; i < magnitudes.length; i += 1) {
+      const intensity = isFrequencyMask ? Math.max(0, Math.min(1, magnitudes[i] * gain)) : maxMagnitude === 0 ? 0 : Math.max(0, Math.min(1, magnitudes[i] / maxMagnitude * gain));
+      const color = spectrumColor(intensity);
+      image.data[4 * i] = color[0];
+      image.data[4 * i + 1] = color[1];
+      image.data[4 * i + 2] = color[2];
+      image.data[4 * i + 3] = 255;
+    }
+    spectrumContext.putImageData(image, 0, 0);
+  }
+  function updateFrequencyInspector(x, y) {
+    inspectedBin = { x, y };
+    const index = y * SIZE + x;
+    const magnitude = currentMagnitudes[index];
+    const valueLabel = patternSelect.value === "single-frequency" ? "VALUE" : "|F|";
+    frequencyReadout.innerHTML = `BIN ${String(x).padStart(2, "0")}, ${String(y).padStart(2, "0")} <span>\xB7</span> ${valueLabel} ${magnitude.toFixed(valueLabel === "VALUE" ? 2 : 0)}`;
+    const editable = patternSelect.value === "single-frequency";
+    amplitudeRange.disabled = !editable;
+    amplitudeRange.value = editable ? String(frequencyValues[index]) : "0";
+    amplitudeValue.value = editable ? frequencyValues[index].toFixed(2) : "--";
+    amplitudeValue.textContent = amplitudeValue.value;
+    binCursor.hidden = false;
+    binCursor.style.left = `${(x + 0.5) / SIZE * 100}%`;
+    binCursor.style.top = `${(y + 0.5) / SIZE * 100}%`;
+  }
+  function frequencyBinAtPointer(event) {
+    const bounds = spectrumCanvas.getBoundingClientRect();
+    const x = Math.max(0, Math.min(SIZE - 1, Math.floor((event.clientX - bounds.left) / bounds.width * SIZE)));
+    const y = Math.max(0, Math.min(SIZE - 1, Math.floor((event.clientY - bounds.top) / bounds.height * SIZE)));
+    return { x, y };
+  }
+  function paintFrequencyLine(start, end, amplitude) {
+    let x = start.x;
+    let y = start.y;
+    const deltaX = Math.abs(end.x - start.x);
+    const stepX = start.x < end.x ? 1 : -1;
+    const deltaY = -Math.abs(end.y - start.y);
+    const stepY = start.y < end.y ? 1 : -1;
+    let error = deltaX + deltaY;
+    let changed = false;
+    while (true) {
+      const index = y * SIZE + x;
+      if (frequencyValues[index] !== amplitude) {
+        frequencyValues[index] = amplitude;
+        changed = true;
+      }
+      if (x === end.x && y === end.y) break;
+      const doubledError = 2 * error;
+      if (doubledError >= deltaY) {
+        error += deltaY;
+        x += stepX;
+      }
+      if (doubledError <= deltaX) {
+        error += deltaX;
+        y += stepY;
+      }
+    }
+    return changed;
+  }
+  function finishFrequencyPointer(event) {
+    if (!pointerDown) return;
+    const bin = frequencyBinAtPointer(event);
+    if (patternSelect.value === "single-frequency") {
+      if (dragHasMoved) {
+        const changed = paintFrequencyLine(lastPointerBin, bin, Number(amplitudeRange.value));
+        if (changed) render();
+      } else {
+        const index = bin.y * SIZE + bin.x;
+        frequencyValues[index] = frequencyValues[index] === 0 ? 1 : 0;
+        render();
+      }
+    }
+    updateFrequencyInspector(bin.x, bin.y);
+    pointerDown = false;
+    dragHasMoved = false;
+    pointerStartBin = null;
+    lastPointerBin = null;
+  }
+  function handleFrequencyPointerMove(event) {
+    if (!pointerDown) return;
+    const bin = frequencyBinAtPointer(event);
+    if (bin.x !== pointerStartBin.x || bin.y !== pointerStartBin.y) dragHasMoved = true;
+    if (patternSelect.value === "single-frequency" && dragHasMoved) {
+      const changed = paintFrequencyLine(lastPointerBin, bin, Number(amplitudeRange.value));
+      if (changed) render();
+    }
+    lastPointerBin = bin;
+    updateFrequencyInspector(bin.x, bin.y);
+  }
+  function startFrequencyPointer(event) {
+    if (event.button !== 0) return;
+    pointerDown = true;
+    dragHasMoved = false;
+    pointerStartBin = frequencyBinAtPointer(event);
+    lastPointerBin = pointerStartBin;
+    spectrumStage.setPointerCapture(event.pointerId);
+  }
+  function cancelFrequencyPointer() {
+    pointerDown = false;
+    dragHasMoved = false;
+    pointerStartBin = null;
+    lastPointerBin = null;
+  }
+  function spectrumColor(value) {
+    const stops = [[18, 31, 35], [22, 101, 98], [178, 190, 116], [244, 177, 87], [246, 239, 207]];
+    const position = value * (stops.length - 1);
+    const start = Math.floor(position);
+    const amount = position - start;
+    const first = stops[start];
+    const second = stops[Math.min(start + 1, stops.length - 1)];
+    return first.map((channel, index) => Math.round(channel + (second[index] - channel) * amount));
+  }
+  function render() {
+    const singleFrequency = patternSelect.value === "single-frequency";
+    const previousInspectedBin = inspectedBin;
+    const intensity = Number(intensityRange.value);
+    amplitudeRange.disabled = !singleFrequency;
+    if (!singleFrequency) {
+      amplitudeValue.value = "--";
+      amplitudeValue.textContent = "--";
+    }
+    let values;
+    let magnitudes;
+    if (singleFrequency) {
+      ({ values, magnitudes } = makeSingleFrequencyPattern(intensity));
+    } else {
+      values = makePattern(patternSelect.value, intensity);
+      magnitudes = getCenteredMagnitudes(transform2D(values));
+    }
+    currentMagnitudes = magnitudes;
+    paintSource(values);
+    paintSpectrum(magnitudes, Number(gainRange.value), singleFrequency);
+    gainValue.value = `${Number(gainRange.value).toFixed(1)}\xD7`;
+    gainValue.textContent = gainValue.value;
+    intensityValue.value = intensity.toFixed(2);
+    intensityValue.textContent = intensityValue.value;
+    readout.innerHTML = `READY <i>\xB7</i> ${patternSelect.options[patternSelect.selectedIndex].text.toUpperCase()}`;
+    transformNote.innerHTML = singleFrequency ? "YOU BUILD K-SPACE <i>\xB7</i> REAL PART SHOWN AT SELECTED AMPLITUDE" : "REAL-VALUED INPUT <i>\xB7</i> SEPARABLE ROW / COLUMN TRANSFORM";
+    spectrumNote.textContent = singleFrequency ? "CENTERED / CLICK OR DRAG TO PAINT" : "CENTERED / LINEAR MAGNITUDE";
+    spectrumFooterNote.innerHTML = singleFrequency ? "SELECTED BIN <b>AMPLITUDE 0\u20141</b>" : "DC COMPONENT <b>AT CENTER</b>";
+    spectrumScale.textContent = singleFrequency ? "LINEAR K-SPACE VALUE" : "LINEAR |F(u,v)|";
+    inspectedBin = null;
+    binCursor.hidden = true;
+    frequencyReadout.innerHTML = singleFrequency ? "BIN --, -- <span>\xB7</span> VALUE --" : "BIN --, -- <span>\xB7</span> |F| --";
+    if (singleFrequency) updateFrequencyInspector(previousInspectedBin?.x ?? 31, previousInspectedBin?.y ?? 31);
+  }
+  patternSelect.addEventListener("change", () => {
+    inspectedBin = null;
+    if (patternSelect.value === "single-frequency") {
+      frequencyValues.fill(0);
+      frequencyValues[31 * SIZE + 31] = 1;
+    }
+    render();
+  });
+  gainRange.addEventListener("input", render);
+  intensityRange.addEventListener("input", render);
+  amplitudeRange.addEventListener("input", () => {
+    if (patternSelect.value !== "single-frequency" || !inspectedBin) return;
+    frequencyValues[inspectedBin.y * SIZE + inspectedBin.x] = Number(amplitudeRange.value);
+    render();
+  });
+  spectrumStage.addEventListener("pointerdown", startFrequencyPointer);
+  spectrumStage.addEventListener("pointermove", handleFrequencyPointerMove);
+  spectrumStage.addEventListener("pointerup", finishFrequencyPointer);
+  spectrumStage.addEventListener("pointercancel", cancelFrequencyPointer);
+  spectrumStage.addEventListener("lostpointercapture", cancelFrequencyPointer);
+  spectrumCanvas.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+    event.preventDefault();
+    const x = inspectedBin?.x ?? SIZE / 2;
+    const y = inspectedBin?.y ?? SIZE / 2;
+    const nextX = Math.max(0, Math.min(SIZE - 1, x + (event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0)));
+    const nextY = Math.max(0, Math.min(SIZE - 1, y + (event.key === "ArrowUp" ? -1 : event.key === "ArrowDown" ? 1 : 0)));
+    updateFrequencyInspector(nextX, nextY);
+  });
+  helpButton.addEventListener("click", () => helpDialog.showModal());
+  helpClose.addEventListener("click", () => helpDialog.close());
+  render();
+})();
+
+</script>
+  </body>
+</html>
+</div>
